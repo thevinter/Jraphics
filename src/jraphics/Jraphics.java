@@ -9,71 +9,266 @@ public class Jraphics extends JPanel{
 
 	private static final long serialVersionUID = 1L;
 	private static boolean isRunning = true;
-	static Mesh meshCube;
-	static Mat4x4 matProj;
-	static Jraphics panel;
+	public Mesh meshCube;
+	public Mat4x4 matProj;
+	private Jraphics panel;
 	final static int TARGET_FPS = 60;
 	final static long OPTIMAL_TIME = 1000000000 / TARGET_FPS; 
-	static long delta = 0; 
-	static double fElapsedTime = 0;
-	static float fTheta = 0;
-	static long cTimeOld = 0;
-	static Vector3 vCamera = new Vector3(0,0,0);
-	static Vector3 vLookDir = new Vector3(0,0,1);
-	
-	
-	public static void main(String[] args) {
-		//Creation of a Frame
-		JFrame.setDefaultLookAndFeelDecorated(true);
-		JFrame frame =  new JFrame("Graphics");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setBackground(Color.white);
-		frame.setSize(500,500);
-		
-		//Adding a Panel to the Frame
-		panel = new Jraphics();
-		frame.add(panel);
-		frame.setVisible(true);
-	
-		//Creation of a Mesh from an .obj file and its projection using a projection matrix
-		meshCube = new Mesh();
-		meshCube.loadFromObject("D:\\Blender\\chess.obj");
-		matProj = MatrixMakeProjection(90.0, (double)panel.getSize().width / (double)panel.getSize().height, 0.1, 1000.0);
-		
-		//Main loop that keeps painting the screen and calculating the "rotation angle"
-		
-		while(isRunning)
-		{
-			
-			frame.repaint();
-			long cTimeNow = System.currentTimeMillis();
-			if(cTimeOld != 0)
-				fElapsedTime = (double)((cTimeNow - cTimeOld) * 0.001);
-		    fTheta += fElapsedTime;
-		    cTimeOld = cTimeNow;
-		    try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}	
-	}
-	
-	
-	
+	private long delta = 0; 
+	private double fElapsedTime = 0;
+	private float fTheta = 0;
+	private long cTimeOld = 0;
+	private Vector3 vCamera = new Vector3(0,0,0);
+	private Vector3 vLookDir = new Vector3(0,0,1);
+	private ArrayList<Triangle> vecTrianglesToRaster = new ArrayList<>();
 	
 	//Override of the paintComponent method so it performs additional functions
 	@Override
 	public void paintComponent(Graphics g) {
 		g.setColor(Color.BLACK);
+		
+		//For each triangle in the sorted list we draw them
+		for(Triangle tri : vecTrianglesToRaster) {
+				
+				//We store the points of the triangles in a temporary array so it's easier to work with them
+				int[] xPoints = {(int)tri.p.get(0).x,  (int)tri.p.get(1).x,  (int)tri.p.get(2).x};
+				int[] yPoints = {(int)tri.p.get(0).y, (int)tri.p.get(1).y, (int)tri.p.get(2).y};
+				
+				//We set the color that we calculated before
+				g.setColor(tri.color);
+				
+				//We create two polygons (one for the outline and one for the mesh)
+				Polygon t = new Polygon(xPoints,yPoints, 3);;
+				Polygon t_out = new Polygon(xPoints,yPoints, 3);
+				
+				//We draw them both and we paint the mesh one with our color and then we draw the outline
+				g.drawPolygon(t);
+				g .fillPolygon(t);
+				g.setColor(Color.BLACK);
+//				g.drawPolygon(t_out);		
+		}
+		
+		
+	}
+	
+	//Method to calculate the color based on the brightness of each face (it's based on the dot product). The greater the projection is the greater the lum is.
+	public static Color getColor(Color color, double lum) {
+		
+		//We get the RGB values of the colors
+		int red = color.getRed();
+	    int green = color.getGreen();
+	    int blue = color.getBlue();
+	    int alpha = color.getAlpha();
+	    
+	    //If we need to change the color (if the projection is less than 0.95) then we calculate the new RGB values that are based on the lum
+	    if(lum > 0.05) {
+	    	red = (int) Math.round(Math.max(0, color.getRed() - 255 * lum));
+		    green = (int) Math.round(Math.max(0, color.getGreen() - 255 * lum));
+		    blue = (int) Math.round(Math.max(0, color.getBlue() - 255 * lum));
+	    }
+	    
+	    //We return the color
+	    return new Color(red, green, blue, alpha);
+	}
+	
+	/*
+	 * Lots of auxiliary functions that are used to work with Vectors and Matrixes
+	 */
+	
+	//Sum of two Vectors
+	public Vector3 VectorAdd (Vector3 v1, Vector3 v2) {
+		return new Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+	}
+	
+	//Subtraction of two Vectors
+	public Vector3 VectorSub (Vector3 v1, Vector3 v2) {
+		return new Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+	}
+	
+	//Multiplication of a Vector and a scalar
+	public Vector3 VectorMul (Vector3 v, double k) {
+		return new Vector3(v.x * k, v.y * k, v.z * k);
+	}
+	
+	//Division of a Vector and a scalar
+	public Vector3 VectorDiv (Vector3 v1, double k) {
+		return new Vector3(v1.x / k, v1.y / k, v1.z / k);
+	}
+	
+	//Dot product between two vectors. Returns a scalar
+	public double VectorDotProduct (Vector3 v1, Vector3 v2) {
+		return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
+	}
+	
+	//Returns the length of a Vector (by doing the sqrt of the dot product with himself)
+	public double VectorLength (Vector3 v) {
+		return Math.sqrt(VectorDotProduct(v,v));
+	}
+	
+	//Normalizes a Vector returning a unit Vector with the same properties 
+	public Vector3 VectorNormalize (Vector3 v) {
+		double l = VectorLength(v);
+		return new Vector3(v.x / l, v.y / l, v.z / l);
+	}
+	
+	//Returns the cross product between two vectors
+	public Vector3 VectorCrossProduct (Vector3 v1, Vector3 v2) {
+		Vector3 v = new Vector3(0,0,0);
+		v.x = v1.y * v2.z - v1.z * v2.y;
+		v.y = v1.z * v2.x - v1.x * v2.z;
+		v.z = v1.x * v2.y - v1.y * v2.x;
+		return v;
+	}
+	
+	//Function that generates an Identity matrix
+	public Mat4x4 MatrixMakeIdentity() {
+		Mat4x4 m = new Mat4x4();
+		m.m[0][0] = 1;
+		m.m[1][1] = 1;
+		m.m[2][2] = 1;
+		m.m[3][3] = 1;
+		return m;
+	}
+	
+	//Rotation matrix for the X axis
+	public Mat4x4 MatrixRotationX(double fAngleRad) {
+		Mat4x4 m = new Mat4x4();
+		m.m[0][0] = 1;
+		m.m[1][1] = Math.cos(fAngleRad);
+		m.m[1][2] = Math.sin(fAngleRad);
+		m.m[2][1] = -Math.sin(fAngleRad);
+		m.m[2][2] = Math.cos(fAngleRad);
+		m.m[3][3] = 1;	
+		return m;
+	}
+	
+	//Rotation matrix for the Y axis
+	public Mat4x4 MatrixRotationY(double fAngleRad) {
+		Mat4x4 m = new Mat4x4();
+		m.m[0][0] = Math.cos(fAngleRad);
+		m.m[0][2] = Math.sin(fAngleRad);
+		m.m[2][0] = -Math.sin(fAngleRad);
+		m.m[1][1] = 1;
+		m.m[2][2] = Math.cos(fAngleRad);
+		m.m[3][3] = 1;
+		return m;
+	}
+	
+	//Rotation matrix for the Z axis 
+	public Mat4x4 MatrixRotationZ(double fAngleRad) {
+		Mat4x4 m = new Mat4x4();
+		m.m[0][0] = Math.cos(fAngleRad);
+		m.m[0][1] = Math.sin(fAngleRad);
+		m.m[1][0] = -Math.sin(fAngleRad);
+		m.m[1][1] = Math.cos(fAngleRad);
+		m.m[2][2] = 1;
+		m.m[3][3] = 1;
+		return m;
+	}
+	
+	//Function that creates a translation matrix on three coordinates
+	public Mat4x4 MatrixMakeTranslation (double x, double y, double z) {
+		Mat4x4 m = new Mat4x4();
+		m.m[0][0] = 1;
+		m.m[1][1] = 1;
+		m.m[2][2] = 1;
+		m.m[3][3] = 1;
+		m.m[3][0] = x;
+		m.m[3][1] = y;
+		m.m[3][2] = z;
+		return m;
+	}
+	
+	//Function that creates a projection matrix based on the FOV of the camera, the aspect ratio of the screen and far and near planes
+	public Mat4x4 MatrixMakeProjection(double fFovDegrees, double fAspectRatio, double fNear, double fFar)
+	{
+		double fFovRad = 1.0 / Math.tan(fFovDegrees * 0.5 / 180.0 * 3.14159);
+		Mat4x4 m = new Mat4x4();
+		m.m[0][0] = fAspectRatio * fFovRad;
+		m.m[1][1] = fFovRad;
+		m.m[2][2] = fFar / (fFar - fNear);
+		m.m[3][2] = (-fFar * fNear) / (fFar - fNear);
+		m.m[2][3] = 1.0f;
+		m.m[3][3] = 0.0f;
+		return m;
+	}
+	
+	//Function that allows to multiply two matrixes
+	public Mat4x4 MatrixMultiplyMatrix (Mat4x4 m1, Mat4x4 m2) {
+		Mat4x4 m = new Mat4x4();
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				m.m[j][i] = m1.m[j][0] * m2.m[0][i] + m1.m[j][1] * m2.m[1][i] + m1.m[j][2] * m2.m[2][i] + m1.m[j][3] * m2.m[3][i];
+			}
+		}
+		return m;
+	}
+	
+	//Creates a Matrix that allows our camera to point at a point
+	public Mat4x4 MatrixPointAt (Vector3 pos, Vector3 target, Vector3 up) {
+		Vector3 newForward = VectorSub(target,pos);
+		newForward = VectorNormalize(newForward);
+		
+		Vector3 a = VectorMul(newForward, VectorDotProduct(up, newForward));
+		Vector3 newUp = VectorSub(up, a);
+		newUp = VectorNormalize(newUp);
+		
+		Vector3 newRight = VectorCrossProduct(newUp, newForward);
+		
+		//Constructs a dimensioning and translation Matrix	
+		Mat4x4 matrix = new Mat4x4();
+		matrix.m[0][0] = newRight.x;	matrix.m[0][1] = newRight.y;	matrix.m[0][2] = newRight.z;	matrix.m[0][3] = 0;
+		matrix.m[1][0] = newUp.x;		matrix.m[1][1] = newUp.y;		matrix.m[1][2] = newUp.z;		matrix.m[1][3] = 0;
+		matrix.m[2][0] = newForward.x;	matrix.m[2][1] = newForward.y;	matrix.m[2][2] = newForward.z;	matrix.m[2][3] = 0;
+		matrix.m[3][0] = pos.x;			matrix.m[3][1] = pos.y;			matrix.m[3][2] = pos.z;			matrix.m[3][3] = 1;
+		return matrix;
+	}
+	
+	//A function to "invert" a matrix
+	public Mat4x4 MatrixQuickInverse(Mat4x4 m) //Works only for Rotation/Translation Matrixes
+	{
+		Mat4x4 matrix = new Mat4x4();
+		matrix.m[0][0] = m.m[0][0]; matrix.m[0][1] = m.m[1][0]; matrix.m[0][2] = m.m[2][0]; matrix.m[0][3] = 0;
+		matrix.m[1][0] = m.m[0][1]; matrix.m[1][1] = m.m[1][1]; matrix.m[1][2] = m.m[2][1]; matrix.m[1][3] = 0;
+		matrix.m[2][0] = m.m[0][2]; matrix.m[2][1] = m.m[1][2]; matrix.m[2][2] = m.m[2][2]; matrix.m[2][3] = 0;
+		matrix.m[3][0] = -(m.m[3][0] * matrix.m[0][0] + m.m[3][1] * matrix.m[1][0] + m.m[3][2] * matrix.m[2][0]);
+		matrix.m[3][1] = -(m.m[3][0] * matrix.m[0][1] + m.m[3][1] * matrix.m[1][1] + m.m[3][2] * matrix.m[2][1]);
+		matrix.m[3][2] = -(m.m[3][0] * matrix.m[0][2] + m.m[3][1] * matrix.m[1][2] + m.m[3][2] * matrix.m[2][2]);
+		matrix.m[3][3] = 1;
+		return matrix;
+	}
+		
+	//Function to multiply a Matrix for a Vector
+	public Vector3 MatrixMultiplyVector (Mat4x4 m, Vector3 i) {
+		Vector3 v = new Vector3(0,0,0);
+		v.x = i.x * m.m[0][0] + i.y * m.m[1][0] + i.z * m.m[2][0] + i.w * m.m[3][0];
+		v.y = i.x * m.m[0][1] + i.y * m.m[1][1] + i.z * m.m[2][1] + i.w * m.m[3][1];
+		v.z = i.x * m.m[0][2] + i.y * m.m[1][2] + i.z * m.m[2][2] + i.w * m.m[3][2];
+		v.w = i.x * m.m[0][3] + i.y * m.m[1][3] + i.z * m.m[2][3] + i.w * m.m[3][3];
+		return v;
+	}
+	
+	public void gameLoop() {
+		long lastLoopTime = System.nanoTime();
+		
+		while(isRunning) {
+			long now = System.nanoTime();
+			long updateLength = now - lastLoopTime;
+			lastLoopTime = now;
+			double delta = updateLength / ((double)OPTIMAL_TIME);
+			doGameUpdates(delta);
 			
+		}
+	}
+	
+	private void doGameUpdates(double delta) {
+		
 		//Creation of some rotational matrixes
 		Mat4x4 matRotZ = new Mat4x4();
 		Mat4x4 matRotX = new Mat4x4();
 		
-		matRotZ = MatrixRotationZ(fTheta * 0.5);
-		matRotX = MatrixRotationX(fTheta);
+		matRotZ = MatrixRotationZ(delta * 0.5);
+		matRotX = MatrixRotationX(delta);
 		
 		//Creation of a translation matrix so our model isn't at 0,0,0
 		Mat4x4 matTrans ;
@@ -179,238 +374,5 @@ public class Jraphics extends JPanel{
 		
 		//We sort the list so the triangles with the greatest Z get drawn last
 		Collections.sort(vecTrianglesToRaster, SortByZ.INSTANCE);
-		
-		//For each triangle in the sorted list we draw them
-		for(Triangle tri : vecTrianglesToRaster) {
-				
-				//We store the points of the triangles in a temporary array so it's easier to work with them
-				int[] xPoints = {(int)tri.p.get(0).x,  (int)tri.p.get(1).x,  (int)tri.p.get(2).x};
-				int[] yPoints = {(int)tri.p.get(0).y, (int)tri.p.get(1).y, (int)tri.p.get(2).y};
-				
-				//We set the color that we calculated before
-				g.setColor(tri.color);
-				
-				//We create two polygons (one for the outline and one for the mesh)
-				Polygon t = new Polygon(xPoints,yPoints, 3);;
-				Polygon t_out = new Polygon(xPoints,yPoints, 3);
-				
-				//We draw them both and we paint the mesh one with our color and then we draw the outline
-				g.drawPolygon(t);
-				g .fillPolygon(t);
-				g.setColor(Color.BLACK);
-//				g.drawPolygon(t_out);		
-		}
-		
-		
-	}
-	
-	//Method to calculate the color based on the brightness of each face (it's based on the dot product). The greater the projection is the greater the lum is.
-	public static Color getColor(Color color, double lum) {
-		
-		//We get the RGB values of the colors
-		int red = color.getRed();
-	    int green = color.getGreen();
-	    int blue = color.getBlue();
-	    int alpha = color.getAlpha();
-	    
-	    //If we need to change the color (if the projection is less than 0.95) then we calculate the new RGB values that are based on the lum
-	    if(lum > 0.05) {
-	    	red = (int) Math.round(Math.max(0, color.getRed() - 255 * lum));
-		    green = (int) Math.round(Math.max(0, color.getGreen() - 255 * lum));
-		    blue = (int) Math.round(Math.max(0, color.getBlue() - 255 * lum));
-	    }
-	    
-	    //We return the color
-	    return new Color(red, green, blue, alpha);
-	}
-	
-	/*
-	 * Lot of auxiliary functions that are used to work with Vectors and Matrixes
-	 */
-	
-	//Sum of two Vectors
-	private Vector3 VectorAdd (Vector3 v1, Vector3 v2) {
-		return new Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
-	}
-	
-	//Subtraction of two Vectors
-	private Vector3 VectorSub (Vector3 v1, Vector3 v2) {
-		return new Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
-	}
-	
-	//Multiplication of a Vector and a scalar
-	private Vector3 VectorMul (Vector3 v, double k) {
-		return new Vector3(v.x * k, v.y * k, v.z * k);
-	}
-	
-	//Division of a Vector and a scalar
-	private Vector3 VectorDiv (Vector3 v1, double k) {
-		return new Vector3(v1.x / k, v1.y / k, v1.z / k);
-	}
-	
-	//Dot product between two vectors. Returns a scalar
-	private double VectorDotProduct (Vector3 v1, Vector3 v2) {
-		return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
-	}
-	
-	//Returns the length of a Vector (by doing the sqrt of the dot product with himself)
-	private double VectorLength (Vector3 v) {
-		return Math.sqrt(VectorDotProduct(v,v));
-	}
-	
-	//Normalizes a Vector returning a unit Vector with the same properties 
-	private Vector3 VectorNormalize (Vector3 v) {
-		double l = VectorLength(v);
-		return new Vector3(v.x / l, v.y / l, v.z / l);
-	}
-	
-	//Returns the cross product between two vectors
-	private Vector3 VectorCrossProduct (Vector3 v1, Vector3 v2) {
-		Vector3 v = new Vector3(0,0,0);
-		v.x = v1.y * v2.z - v1.z * v2.y;
-		v.y = v1.z * v2.x - v1.x * v2.z;
-		v.z = v1.x * v2.y - v1.y * v2.x;
-		return v;
-	}
-	
-	//Function that generates an Identity matrix
-	private Mat4x4 MatrixMakeIdentity() {
-		Mat4x4 m = new Mat4x4();
-		m.m[0][0] = 1;
-		m.m[1][1] = 1;
-		m.m[2][2] = 1;
-		m.m[3][3] = 1;
-		return m;
-	}
-	
-	//Rotation matrix for the X axis
-	private Mat4x4 MatrixRotationX(double fAngleRad) {
-		Mat4x4 m = new Mat4x4();
-		m.m[0][0] = 1;
-		m.m[1][1] = Math.cos(fAngleRad);
-		m.m[1][2] = Math.sin(fAngleRad);
-		m.m[2][1] = -Math.sin(fAngleRad);
-		m.m[2][2] = Math.cos(fAngleRad);
-		m.m[3][3] = 1;	
-		return m;
-	}
-	
-	//Rotation matrix for the Y axis
-	private Mat4x4 MatrixRotationY(double fAngleRad) {
-		Mat4x4 m = new Mat4x4();
-		m.m[0][0] = Math.cos(fAngleRad);
-		m.m[0][2] = Math.sin(fAngleRad);
-		m.m[2][0] = -Math.sin(fAngleRad);
-		m.m[1][1] = 1;
-		m.m[2][2] = Math.cos(fAngleRad);
-		m.m[3][3] = 1;
-		return m;
-	}
-	
-	//Rotation matrix for the Z axis 
-	private Mat4x4 MatrixRotationZ(double fAngleRad) {
-		Mat4x4 m = new Mat4x4();
-		m.m[0][0] = Math.cos(fAngleRad);
-		m.m[0][1] = Math.sin(fAngleRad);
-		m.m[1][0] = -Math.sin(fAngleRad);
-		m.m[1][1] = Math.cos(fAngleRad);
-		m.m[2][2] = 1;
-		m.m[3][3] = 1;
-		return m;
-	}
-	
-	//Function that creates a translation matrix on three coordinates
-	private Mat4x4 MatrixMakeTranslation (double x, double y, double z) {
-		Mat4x4 m = new Mat4x4();
-		m.m[0][0] = 1;
-		m.m[1][1] = 1;
-		m.m[2][2] = 1;
-		m.m[3][3] = 1;
-		m.m[3][0] = x;
-		m.m[3][1] = y;
-		m.m[3][2] = z;
-		return m;
-	}
-	
-	//Function that creates a projection matrix based on the FOV of the camera, the aspect ratio of the screen and far and near planes
-	private static Mat4x4 MatrixMakeProjection(double fFovDegrees, double fAspectRatio, double fNear, double fFar)
-	{
-		double fFovRad = 1.0 / Math.tan(fFovDegrees * 0.5 / 180.0 * 3.14159);
-		Mat4x4 m = new Mat4x4();
-		m.m[0][0] = fAspectRatio * fFovRad;
-		m.m[1][1] = fFovRad;
-		m.m[2][2] = fFar / (fFar - fNear);
-		m.m[3][2] = (-fFar * fNear) / (fFar - fNear);
-		m.m[2][3] = 1.0f;
-		m.m[3][3] = 0.0f;
-		return m;
-	}
-	
-	//Function that allows to multiply two matrixes
-	private Mat4x4 MatrixMultiplyMatrix (Mat4x4 m1, Mat4x4 m2) {
-		Mat4x4 m = new Mat4x4();
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				m.m[j][i] = m1.m[j][0] * m2.m[0][i] + m1.m[j][1] * m2.m[1][i] + m1.m[j][2] * m2.m[2][i] + m1.m[j][3] * m2.m[3][i];
-			}
-		}
-		return m;
-	}
-	
-	//Creates a Matrix that allows our camera to point at a point
-	private Mat4x4 MatrixPointAt (Vector3 pos, Vector3 target, Vector3 up) {
-		Vector3 newForward = VectorSub(target,pos);
-		newForward = VectorNormalize(newForward);
-		
-		Vector3 a = VectorMul(newForward, VectorDotProduct(up, newForward));
-		Vector3 newUp = VectorSub(up, a);
-		newUp = VectorNormalize(newUp);
-		
-		Vector3 newRight = VectorCrossProduct(newUp, newForward);
-		
-		//Constructs a dimensioning and translation Matrix	
-		Mat4x4 matrix = new Mat4x4();
-		matrix.m[0][0] = newRight.x;	matrix.m[0][1] = newRight.y;	matrix.m[0][2] = newRight.z;	matrix.m[0][3] = 0;
-		matrix.m[1][0] = newUp.x;		matrix.m[1][1] = newUp.y;		matrix.m[1][2] = newUp.z;		matrix.m[1][3] = 0;
-		matrix.m[2][0] = newForward.x;	matrix.m[2][1] = newForward.y;	matrix.m[2][2] = newForward.z;	matrix.m[2][3] = 0;
-		matrix.m[3][0] = pos.x;			matrix.m[3][1] = pos.y;			matrix.m[3][2] = pos.z;			matrix.m[3][3] = 1;
-		return matrix;
-	}
-	
-	//A function to "invert" a matrix
-	private Mat4x4 MatrixQuickInverse(Mat4x4 m) //Works only for Rotation/Translation Matrixes
-	{
-		Mat4x4 matrix = new Mat4x4();
-		matrix.m[0][0] = m.m[0][0]; matrix.m[0][1] = m.m[1][0]; matrix.m[0][2] = m.m[2][0]; matrix.m[0][3] = 0;
-		matrix.m[1][0] = m.m[0][1]; matrix.m[1][1] = m.m[1][1]; matrix.m[1][2] = m.m[2][1]; matrix.m[1][3] = 0;
-		matrix.m[2][0] = m.m[0][2]; matrix.m[2][1] = m.m[1][2]; matrix.m[2][2] = m.m[2][2]; matrix.m[2][3] = 0;
-		matrix.m[3][0] = -(m.m[3][0] * matrix.m[0][0] + m.m[3][1] * matrix.m[1][0] + m.m[3][2] * matrix.m[2][0]);
-		matrix.m[3][1] = -(m.m[3][0] * matrix.m[0][1] + m.m[3][1] * matrix.m[1][1] + m.m[3][2] * matrix.m[2][1]);
-		matrix.m[3][2] = -(m.m[3][0] * matrix.m[0][2] + m.m[3][1] * matrix.m[1][2] + m.m[3][2] * matrix.m[2][2]);
-		matrix.m[3][3] = 1;
-		return matrix;
-	}
-		
-	//Function to multiply a Matrix for a Vector
-	private Vector3 MatrixMultiplyVector (Mat4x4 m, Vector3 i) {
-		Vector3 v = new Vector3(0,0,0);
-		v.x = i.x * m.m[0][0] + i.y * m.m[1][0] + i.z * m.m[2][0] + i.w * m.m[3][0];
-		v.y = i.x * m.m[0][1] + i.y * m.m[1][1] + i.z * m.m[2][1] + i.w * m.m[3][1];
-		v.z = i.x * m.m[0][2] + i.y * m.m[1][2] + i.z * m.m[2][2] + i.w * m.m[3][2];
-		v.w = i.x * m.m[0][3] + i.y * m.m[1][3] + i.z * m.m[2][3] + i.w * m.m[3][3];
-		return v;
-	}
-	
-	public void gameLoop() {
-		long lastLoopTime = System.nanoTime();
-		
-		while(isRunning) {
-			long now = System.nanoTime();
-			long updateLength = now - lastLoopTime;
-			lastLoopTime = now;
-			double delta = updateLength / ((double)OPTIMAL_TIME);
-			//doGameUpdates(delta);
-			
-		}
 	}
 }
