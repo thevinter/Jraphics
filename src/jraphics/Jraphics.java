@@ -243,7 +243,7 @@ public class Jraphics extends JPanel{
 				
 				//Creation of a translation matrix so our model isn't at 0,0,0
 				Mat4x4 matTrans ;
-				matTrans = MatrixMakeTranslation(0,0,30);
+				matTrans = MatrixMakeTranslation(0,0,10);
 				
 				//Creation of a world matrix that represents all the transformations of the objects
 				Mat4x4 matWorld;
@@ -312,44 +312,43 @@ public class Jraphics extends JPanel{
 
 							
 							Triangle[] clipped = new Triangle[2];
-							clipped = TriangleClipAgainstPlane(new Vector3(0,0,1), new Vector3(0,0,1), triViewed);
+							clipped = TriangleClipAgainstPlane(new Vector3(0,0,0.1), new Vector3(0,0,0.1), triViewed);
 							int nClippedTriangles = countNotNull(clipped);
-							
+							System.out.println(nClippedTriangles);
 							for(int n = 0; n < nClippedTriangles; n++) {
+								debugClip(clipped);
+								//We project each triangle using the projection matrix
+								triProjected.p.set(0, MatrixMultiplyVector(matProj, clipped[n].p.get(0)));
+								triProjected.p.set(1, MatrixMultiplyVector(matProj, clipped[n].p.get(1)));
+								triProjected.p.set(2, MatrixMultiplyVector(matProj, clipped[n].p.get(2)));
 								
-							
-							//We project each triangle using the projection matrix
-							triProjected.p.set(0, MatrixMultiplyVector(matProj, clipped[n].p.get(0)));
-							triProjected.p.set(1, MatrixMultiplyVector(matProj, clipped[n].p.get(1)));
-							triProjected.p.set(2, MatrixMultiplyVector(matProj, clipped[n].p.get(2)));
-							
-							//Extra math
-							triProjected.p.set(0, VectorDiv(triProjected.p.get(0), triProjected.p.get(0).w));
-							triProjected.p.set(1, VectorDiv(triProjected.p.get(1), triProjected.p.get(1).w));
-							triProjected.p.set(2, VectorDiv(triProjected.p.get(2), triProjected.p.get(2).w));
-							
-							//We offset the view by 1,1,0
-							Vector3 vOffsetView = new Vector3(1,1,0);
-							triProjected.p.set(0, VectorAdd(triProjected.p.get(0), vOffsetView));
-							triProjected.p.set(1, VectorAdd(triProjected.p.get(1), vOffsetView));
-							triProjected.p.set(2, VectorAdd(triProjected.p.get(2), vOffsetView));
-							
-							//We scale the coordinates based on our panel size
-							triProjected.p.get(0).x *= 0.5 * (double) frame.getSize().width;
-							triProjected.p.get(0).y *= 0.5 * (double) frame.getSize().height;
-							triProjected.p.get(1).x *= 0.5 * (double) frame.getSize().width;
-							triProjected.p.get(1).y *= 0.5 * (double) frame.getSize().height;
-							triProjected.p.get(2).x *= 0.5 * (double) frame.getSize().width;
-							triProjected.p.get(2).y *= 0.5 * (double) frame.getSize().height;
-							
-							//We create a temp triangle that is equivalent to the projected one so we can paint the inside
-							Triangle temp = new Triangle(triProjected.p.get(0), triProjected.p.get(1), triProjected.p.get(2));
-							
-							//We get the color based on the main color and the dot product of the normal and the light we calculated before
-							temp.color = getColor(Color.GREEN, 1-dp);
-							
-							//We add the triangle to the list we created before so we can sort it
-							vecTrianglesToRaster.add(temp);	
+								//Extra math
+								triProjected.p.set(0, VectorDiv(triProjected.p.get(0), triProjected.p.get(0).w));
+								triProjected.p.set(1, VectorDiv(triProjected.p.get(1), triProjected.p.get(1).w));
+								triProjected.p.set(2, VectorDiv(triProjected.p.get(2), triProjected.p.get(2).w));
+								
+								//We offset the view by 1,1,0
+								Vector3 vOffsetView = new Vector3(1,1,0);
+								triProjected.p.set(0, VectorAdd(triProjected.p.get(0), vOffsetView));
+								triProjected.p.set(1, VectorAdd(triProjected.p.get(1), vOffsetView));
+								triProjected.p.set(2, VectorAdd(triProjected.p.get(2), vOffsetView));
+								
+								//We scale the coordinates based on our panel size
+								triProjected.p.get(0).x *= 0.5 * (double) frame.getSize().width;
+								triProjected.p.get(0).y *= 0.5 * (double) frame.getSize().height;
+								triProjected.p.get(1).x *= 0.5 * (double) frame.getSize().width;
+								triProjected.p.get(1).y *= 0.5 * (double) frame.getSize().height;
+								triProjected.p.get(2).x *= 0.5 * (double) frame.getSize().width;
+								triProjected.p.get(2).y *= 0.5 * (double) frame.getSize().height;
+								
+								//We create a temp triangle that is equivalent to the projected one so we can paint the inside
+								Triangle temp = new Triangle(triProjected.p.get(0), triProjected.p.get(1), triProjected.p.get(2));
+								
+								//We get the color based on the main color and the dot product of the normal and the light we calculated before
+								temp.color = getColor(Color.GREEN, 1-dp);
+								
+								//We add the triangle to the list we created before so we can sort it
+								vecTrianglesToRaster.add(temp);	
 							}
 						}									
 				}		
@@ -375,7 +374,7 @@ public class Jraphics extends JPanel{
 						g.drawPolygon(t);
 						g .fillPolygon(t);
 						g.setColor(Color.BLACK);
-//						g.drawPolygon(t_out);		
+						g.drawPolygon(t_out);		
 				}
 	}
 	
@@ -471,10 +470,18 @@ public class Jraphics extends JPanel{
 			tempTri2.p.set(0, insidePoints[1]);
 			tempTri2.p.set(1, tempTri1.p.get(2));
 			tempTri2.p.set(2, VectorIntersectPlane(plane_p, plane_n, insidePoints[1], outsidePoints[0]));
+			outTri[0] = tempTri1;
+			outTri[1] = tempTri2;
 			return outTri;
 		}
 		
 		return outTri;	
+	}
+	
+	private void debugClip(Triangle[] clip) {
+		for (int i =0; i <2; i++) {
+			System.out.println(clip[i]);
+		}	
 	}
 	
 	public void gameLoop() {
