@@ -276,16 +276,16 @@ public class Jraphics extends JPanel{
 					Triangle triViewed = new Triangle(new Vector3(0,0,0), new Vector3(0,0,0), new Vector3(0,0,0));
 					
 					//Translating all the vertexes of the tri using the world matrix
-					triTransformed.p.set(0, MatrixMultiplyVector(matWorld, tri.p.get(0)));
-					triTransformed.p.set(1, MatrixMultiplyVector(matWorld, tri.p.get(1)));
-					triTransformed.p.set(2, MatrixMultiplyVector(matWorld, tri.p.get(2)));
+					triTransformed.p[0] = MatrixMultiplyVector(matWorld, tri.p[0]);
+					triTransformed.p[1] = MatrixMultiplyVector(matWorld, tri.p[1]);
+					triTransformed.p[2] = MatrixMultiplyVector(matWorld, tri.p[2]);
 					
 					//Creation of a normal and two lines
 					Vector3 normal = new Vector3(0,0,0); Vector3 line1 = new Vector3 (0,0,0); Vector3 line2 = new Vector3(0,0,0);
 					
 					//Auxialiary lines needed to calculate the normal of each triangle
-					line1 = VectorSub(triTransformed.p.get(1), triTransformed.p.get(0));
-					line2 = VectorSub(triTransformed.p.get(2), triTransformed.p.get(0));
+					line1 = VectorSub(triTransformed.p[1], triTransformed.p[0]);
+					line2 = VectorSub(triTransformed.p[2], triTransformed.p[0]);
 					
 					//Calculation of the normal using the cross product
 					normal = VectorCrossProduct(line1, line2);
@@ -294,7 +294,7 @@ public class Jraphics extends JPanel{
 					normal = VectorNormalize(normal);
 					
 					//A vector used by the camera
-					Vector3 vCameraRay = VectorSub(triTransformed.p.get(0), vCamera);
+					Vector3 vCameraRay = VectorSub(triTransformed.p[0], vCamera);
 			        
 					//If the projection of the normal on the view is lesser than 0 then we can actually see the triangle so we draw it
 			        if(VectorDotProduct(normal, vCameraRay) < 0) {
@@ -308,9 +308,9 @@ public class Jraphics extends JPanel{
 							//Here we calculate the dot product of the light and the normal so we can see how much the triangle deviates from our view
 							double dp = Math.max(0.1, VectorDotProduct(light_direction, normal));
 							
-							triViewed.p.set(0, MatrixMultiplyVector(matView, triTransformed.p.get(0)));
-							triViewed.p.set(1, MatrixMultiplyVector(matView, triTransformed.p.get(1)));
-							triViewed.p.set(2, MatrixMultiplyVector(matView, triTransformed.p.get(2)));
+							triViewed.p[0] = MatrixMultiplyVector(matView, triTransformed.p[0]);
+							triViewed.p[1] = MatrixMultiplyVector(matView, triTransformed.p[1]);
+							triViewed.p[2] = MatrixMultiplyVector(matView, triTransformed.p[2]);
 
 							
 							Triangle[] clipped = new Triangle[2];
@@ -321,31 +321,31 @@ public class Jraphics extends JPanel{
 								
 							
 							//We project each triangle using the projection matrix
-							triProjected.p.set(0, MatrixMultiplyVector(matProj, clipped[n].p.get(0)));
-							triProjected.p.set(1, MatrixMultiplyVector(matProj, clipped[n].p.get(1)));
-							triProjected.p.set(2, MatrixMultiplyVector(matProj, clipped[n].p.get(2)));
+							triProjected.p[0] = MatrixMultiplyVector(matProj, clipped[n].p[0]);
+							triProjected.p[1] = MatrixMultiplyVector(matProj, clipped[n].p[1]);
+							triProjected.p[2] = MatrixMultiplyVector(matProj, clipped[n].p[2]);
 							
 							//Extra math
-							triProjected.p.set(0, VectorDiv(triProjected.p.get(0), triProjected.p.get(0).w));
-							triProjected.p.set(1, VectorDiv(triProjected.p.get(1), triProjected.p.get(1).w));
-							triProjected.p.set(2, VectorDiv(triProjected.p.get(2), triProjected.p.get(2).w));
+							triProjected.p[0] = VectorDiv(triProjected.p[0], triProjected.p[0].w);
+							triProjected.p[1] = VectorDiv(triProjected.p[1], triProjected.p[1].w);
+							triProjected.p[2] = VectorDiv(triProjected.p[2], triProjected.p[2].w);
 							
 							//We offset the view by 1,1,0
 							Vector3 vOffsetView = new Vector3(1,1,0);
-							triProjected.p.set(0, VectorAdd(triProjected.p.get(0), vOffsetView));
-							triProjected.p.set(1, VectorAdd(triProjected.p.get(1), vOffsetView));
-							triProjected.p.set(2, VectorAdd(triProjected.p.get(2), vOffsetView));
+							triProjected.p[0] = VectorAdd(triProjected.p[0], vOffsetView);
+							triProjected.p[1] = VectorAdd(triProjected.p[1], vOffsetView);
+							triProjected.p[2] = VectorAdd(triProjected.p[2], vOffsetView);
 							
 							//We scale the coordinates based on our panel size
-							triProjected.p.get(0).x *= 0.5 * (double) frame.getSize().width;
-							triProjected.p.get(0).y *= 0.5 * (double) frame.getSize().height;
-							triProjected.p.get(1).x *= 0.5 * (double) frame.getSize().width;
-							triProjected.p.get(1).y *= 0.5 * (double) frame.getSize().height;
-							triProjected.p.get(2).x *= 0.5 * (double) frame.getSize().width;
-							triProjected.p.get(2).y *= 0.5 * (double) frame.getSize().height;
+							triProjected.p[0].x *= 0.5 * (double) frame.getSize().width;
+							triProjected.p[0].y *= 0.5 * (double) frame.getSize().height;
+							triProjected.p[1].x *= 0.5 * (double) frame.getSize().width;
+							triProjected.p[1].y *= 0.5 * (double) frame.getSize().height;
+							triProjected.p[2].x *= 0.5 * (double) frame.getSize().width;
+							triProjected.p[2].y *= 0.5 * (double) frame.getSize().height;
 							
 							//We create a temp triangle that is equivalent to the projected one so we can paint the inside
-							Triangle temp = new Triangle(triProjected.p.get(0), triProjected.p.get(1), triProjected.p.get(2));
+							Triangle temp = new Triangle(triProjected.p[0], triProjected.p[1], triProjected.p[2]);
 							
 							//We get the color based on the main color and the dot product of the normal and the light we calculated before
 							temp.color = getColor(Color.GREEN, 1-dp);
@@ -414,8 +414,8 @@ public class Jraphics extends JPanel{
 						for (Triangle t : listTri) {
 //							
 							//We store the points of the triangles in a temporary array so it's easier to work with them
-							int[] xPoints = {(int)t.p.get(0).x,  (int)t.p.get(1).x,  (int)t.p.get(2).x};
-							int[] yPoints = {(int)t.p.get(0).y, (int)t.p.get(1).y, (int)t.p.get(2).y};
+							int[] xPoints = {(int)t.p[0].x,  (int)t.p[1].x,  (int)t.p[2].x};
+							int[] yPoints = {(int)t.p[0].y, (int)t.p[1].y, (int)t.p[2].y};
 							
 							//We set the color that we calculated before
 							g.setColor(tri.color);
@@ -487,16 +487,16 @@ public class Jraphics extends JPanel{
 		int nInsidePointCount = 0;
 		int nOutsidePointCount = 0;
 		
-		double d0 = dist(inTri.p.get(0), plane_n, plane_p);
-		double d1 = dist(inTri.p.get(1), plane_n, plane_p);
-		double d2 = dist(inTri.p.get(2), plane_n, plane_p);
+		double d0 = dist(inTri.p[0], plane_n, plane_p);
+		double d1 = dist(inTri.p[1], plane_n, plane_p);
+		double d2 = dist(inTri.p[2], plane_n, plane_p);
 		
-		if(d0 >= 0) { insidePoints[nInsidePointCount++] = inTri.p.get(0); }
-		else { outsidePoints[nOutsidePointCount++] = inTri.p.get(0); }
-		if(d1 >= 0) { insidePoints[nInsidePointCount++] = inTri.p.get(1); }
-		else { outsidePoints[nOutsidePointCount++] = inTri.p.get(1); }
-		if(d2 >= 0) { insidePoints[nInsidePointCount++] = inTri.p.get(2); }
-		else { outsidePoints[nOutsidePointCount++] = inTri.p.get(2); }
+		if(d0 >= 0) { insidePoints[nInsidePointCount++] = inTri.p[0]; }
+		else { outsidePoints[nOutsidePointCount++] = inTri.p[0]; }
+		if(d1 >= 0) { insidePoints[nInsidePointCount++] = inTri.p[1]; }
+		else { outsidePoints[nOutsidePointCount++] = inTri.p[1]; }
+		if(d2 >= 0) { insidePoints[nInsidePointCount++] = inTri.p[2]; }
+		else { outsidePoints[nOutsidePointCount++] = inTri.p[2]; }
 		
 		if(nInsidePointCount == 0) {
 			return outTri;
@@ -509,9 +509,9 @@ public class Jraphics extends JPanel{
 		
 		if(nInsidePointCount == 1 && nOutsidePointCount == 2) {
 			Triangle tempTri = new Triangle();
-			tempTri.p.set(0, insidePoints[0]);
-			tempTri.p.set(1, VectorIntersectPlane(plane_p,plane_n, insidePoints[0], outsidePoints[0]));
-			tempTri.p.set(2, VectorIntersectPlane(plane_p, plane_n, insidePoints[0], outsidePoints[1]));
+			tempTri.p[0] = insidePoints[0];
+			tempTri.p[1] = VectorIntersectPlane(plane_p,plane_n, insidePoints[0], outsidePoints[0]);
+			tempTri.p[2] = VectorIntersectPlane(plane_p, plane_n, insidePoints[0], outsidePoints[1]);
 			outTri[0] = tempTri;
 			return outTri;
 		}
@@ -520,13 +520,13 @@ public class Jraphics extends JPanel{
 			Triangle tempTri1 = new Triangle();
 			Triangle tempTri2 = new Triangle();
 			
-			tempTri1.p.set(0, insidePoints[0]);
-			tempTri1.p.set(1, insidePoints[1]);
-			tempTri1.p.set(2, VectorIntersectPlane(plane_p, plane_n, insidePoints[0], outsidePoints[0]));
+			tempTri1.p[0] = insidePoints[0];
+			tempTri1.p[1] = insidePoints[1];
+			tempTri1.p[2] = VectorIntersectPlane(plane_p, plane_n, insidePoints[0], outsidePoints[0]);
 			
-			tempTri2.p.set(0, insidePoints[1]);
-			tempTri2.p.set(1, tempTri1.p.get(2));
-			tempTri2.p.set(2, VectorIntersectPlane(plane_p, plane_n, insidePoints[1], outsidePoints[0]));
+			tempTri2.p[0] = insidePoints[1];
+			tempTri2.p[1] = tempTri1.p[2];
+			tempTri2.p[2] = VectorIntersectPlane(plane_p, plane_n, insidePoints[1], outsidePoints[0]);
 			outTri[0] = tempTri1;
 			outTri[1] = tempTri2;
 			return outTri;

@@ -9,18 +9,17 @@ import java.util.Comparator;
  */
 
 public class Triangle {
-	public ArrayList<Vector3> p;
+	public Vector3[] p = new Vector3[3];
 	public Color color;
 	public Triangle(Vector3 a, Vector3 b, Vector3 c) {
-		p = new ArrayList<>();
-		p.add(a);
-		p.add(b);
-		p.add(c);
+		p[0] = a;
+		p[1] = b;
+		p[2] = c;
 	}
 	
 	public Triangle() {
-		p = new ArrayList<>();
-		p.add(new Vector3());
-		p.add(new Vector3());
-		p.add(new Vector3());	}
+		p[0] = new Vector3();
+		p[1] = new Vector3();
+		p[2] = new Vector3();	
+	}
 }
