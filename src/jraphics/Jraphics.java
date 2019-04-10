@@ -18,7 +18,6 @@ public class Jraphics extends JPanel{
 	public JFrame frame;
 	final static int TARGET_FPS = 60;
 	final static long OPTIMAL_TIME = 1000000000 / TARGET_FPS; 
-	private long delta = 0; 
 	private double fElapsedTime = 0;
 	private float fTheta = 0;
 	private long cTimeOld = 0;
@@ -28,14 +27,12 @@ public class Jraphics extends JPanel{
 	private float fYaw;
 	private float moveSpeed = 30;
 	private float rotateSpeed = 4;
+	
 	//Override of the paintComponent method so it performs additional functions
 	@Override
 	public void paintComponent(Graphics g) {
-		
 		g.setColor(Color.BLACK);
-		
-		doGameUpdates(g);		
-		
+		doGameUpdates(g);	
 	}
 	
 	//Method to calculate the color based on the brightness of each face (it's based on the dot product). The greater the projection is the greater the lum is.
@@ -235,8 +232,12 @@ public class Jraphics extends JPanel{
 		return v;
 	}
 	
+	/*
+	 * Main function that performs all of the 3D calculations
+	 */
 	private void doGameUpdates(Graphics g) {
-		//Creation of some rotational matrixes
+				
+				//Creation of some rotational matrixes
 				Mat4x4 matRotZ = new Mat4x4();
 				Mat4x4 matRotX = new Mat4x4();
 				
@@ -265,8 +266,8 @@ public class Jraphics extends JPanel{
 				Mat4x4 matView = MatrixQuickInverse(matCamera);
 				
 				//Temp list to store triangles that we still have to sort
-				
 				vecTrianglesToRaster = new ArrayList<>();
+				
 				//Loop that works on all of the triangles in our mesh
 				for(Triangle tri : meshCube.tris) {
 					

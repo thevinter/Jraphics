@@ -12,7 +12,7 @@ class SortByZ implements Comparator<Triangle>
 	public static final Comparator<Triangle> INSTANCE = new SortByZ();
 	
 	private double calcZ(Triangle tri) {
-		return (tri.p.get(0).z + tri.p.get(1).z +tri.p.get(2).z) / 3.0;
+		return (tri.p[0].z + tri.p[1].z +tri.p[2].z) / 3.0;
 	}
 
     public int compare(Triangle a, Triangle b) 
