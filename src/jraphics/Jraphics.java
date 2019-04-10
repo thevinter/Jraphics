@@ -4,6 +4,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Queue;
 	
 import javax.swing.*;
 
@@ -314,41 +316,43 @@ public class Jraphics extends JPanel{
 							Triangle[] clipped = new Triangle[2];
 							clipped = TriangleClipAgainstPlane(new Vector3(0,0,0.1), new Vector3(0,0,0.1), triViewed);
 							int nClippedTriangles = countNotNull(clipped);
-							System.out.println(nClippedTriangles);
+							
 							for(int n = 0; n < nClippedTriangles; n++) {
-								debugClip(clipped);
-								//We project each triangle using the projection matrix
-								triProjected.p.set(0, MatrixMultiplyVector(matProj, clipped[n].p.get(0)));
-								triProjected.p.set(1, MatrixMultiplyVector(matProj, clipped[n].p.get(1)));
-								triProjected.p.set(2, MatrixMultiplyVector(matProj, clipped[n].p.get(2)));
 								
-								//Extra math
-								triProjected.p.set(0, VectorDiv(triProjected.p.get(0), triProjected.p.get(0).w));
-								triProjected.p.set(1, VectorDiv(triProjected.p.get(1), triProjected.p.get(1).w));
-								triProjected.p.set(2, VectorDiv(triProjected.p.get(2), triProjected.p.get(2).w));
-								
-								//We offset the view by 1,1,0
-								Vector3 vOffsetView = new Vector3(1,1,0);
-								triProjected.p.set(0, VectorAdd(triProjected.p.get(0), vOffsetView));
-								triProjected.p.set(1, VectorAdd(triProjected.p.get(1), vOffsetView));
-								triProjected.p.set(2, VectorAdd(triProjected.p.get(2), vOffsetView));
-								
-								//We scale the coordinates based on our panel size
-								triProjected.p.get(0).x *= 0.5 * (double) frame.getSize().width;
-								triProjected.p.get(0).y *= 0.5 * (double) frame.getSize().height;
-								triProjected.p.get(1).x *= 0.5 * (double) frame.getSize().width;
-								triProjected.p.get(1).y *= 0.5 * (double) frame.getSize().height;
-								triProjected.p.get(2).x *= 0.5 * (double) frame.getSize().width;
-								triProjected.p.get(2).y *= 0.5 * (double) frame.getSize().height;
-								
-								//We create a temp triangle that is equivalent to the projected one so we can paint the inside
-								Triangle temp = new Triangle(triProjected.p.get(0), triProjected.p.get(1), triProjected.p.get(2));
-								
-								//We get the color based on the main color and the dot product of the normal and the light we calculated before
-								temp.color = getColor(Color.GREEN, 1-dp);
-								
-								//We add the triangle to the list we created before so we can sort it
-								vecTrianglesToRaster.add(temp);	
+							
+							//We project each triangle using the projection matrix
+							triProjected.p.set(0, MatrixMultiplyVector(matProj, clipped[n].p.get(0)));
+							triProjected.p.set(1, MatrixMultiplyVector(matProj, clipped[n].p.get(1)));
+							triProjected.p.set(2, MatrixMultiplyVector(matProj, clipped[n].p.get(2)));
+							
+							//Extra math
+							triProjected.p.set(0, VectorDiv(triProjected.p.get(0), triProjected.p.get(0).w));
+							triProjected.p.set(1, VectorDiv(triProjected.p.get(1), triProjected.p.get(1).w));
+							triProjected.p.set(2, VectorDiv(triProjected.p.get(2), triProjected.p.get(2).w));
+							
+							//We offset the view by 1,1,0
+							Vector3 vOffsetView = new Vector3(1,1,0);
+							triProjected.p.set(0, VectorAdd(triProjected.p.get(0), vOffsetView));
+							triProjected.p.set(1, VectorAdd(triProjected.p.get(1), vOffsetView));
+							triProjected.p.set(2, VectorAdd(triProjected.p.get(2), vOffsetView));
+							
+							//We scale the coordinates based on our panel size
+							triProjected.p.get(0).x *= 0.5 * (double) frame.getSize().width;
+							triProjected.p.get(0).y *= 0.5 * (double) frame.getSize().height;
+							triProjected.p.get(1).x *= 0.5 * (double) frame.getSize().width;
+							triProjected.p.get(1).y *= 0.5 * (double) frame.getSize().height;
+							triProjected.p.get(2).x *= 0.5 * (double) frame.getSize().width;
+							triProjected.p.get(2).y *= 0.5 * (double) frame.getSize().height;
+							
+							//We create a temp triangle that is equivalent to the projected one so we can paint the inside
+							Triangle temp = new Triangle(triProjected.p.get(0), triProjected.p.get(1), triProjected.p.get(2));
+							
+							//We get the color based on the main color and the dot product of the normal and the light we calculated before
+							temp.color = getColor(Color.GREEN, 1-dp);
+							
+							//We add the triangle to the list we created before so we can sort it
+							vecTrianglesToRaster.add(temp);	
+							
 							}
 						}									
 				}		
@@ -358,26 +362,79 @@ public class Jraphics extends JPanel{
 				
 				//For each triangle in the sorted list we draw them
 				for(Triangle tri : vecTrianglesToRaster) {
+					
+						Triangle[] clipped = new Triangle[2];
+						Queue<Triangle> listTri = new LinkedList<>();
+						listTri.add(tri);
+						int newTriangles = 1;
 						
-						//We store the points of the triangles in a temporary array so it's easier to work with them
-						int[] xPoints = {(int)tri.p.get(0).x,  (int)tri.p.get(1).x,  (int)tri.p.get(2).x};
-						int[] yPoints = {(int)tri.p.get(0).y, (int)tri.p.get(1).y, (int)tri.p.get(2).y};
+						for (int p = 0; p < 4; p++)
+						{
+							int nTrisToAdd = 0;
+							while (newTriangles > 0)
+							{
+								// Take triangle from front of queue
+								Triangle test = listTri.remove();
+								newTriangles--;
+
+								// Clip it against a plane. We only need to test each 
+								// subsequent plane, against subsequent new triangles
+								// as all triangles after a plane clip are guaranteed
+								// to lie on the inside of the plane. I like how this
+								// comment is almost completely and utterly justified
+								switch (p)
+								{
+								case 0:	
+									clipped = TriangleClipAgainstPlane(new Vector3(0,0,0), new Vector3(0,1,0), test);
+									nTrisToAdd = countNotNull(clipped);
+									break;
+								case 1:	
+									clipped = TriangleClipAgainstPlane(new Vector3(0,frame.getSize().height - 1, 0), new Vector3(0,-1,0), test); 
+									nTrisToAdd = countNotNull(clipped);
+									break;
+								case 2:	
+									clipped = TriangleClipAgainstPlane(new Vector3(0,0,0), new Vector3(1,0,0), test);
+									nTrisToAdd = countNotNull(clipped);
+									break;
+								case 3:	
+									clipped = TriangleClipAgainstPlane(new Vector3(frame.getSize().width -1,0,0), new Vector3(-1,0,0), test);
+									nTrisToAdd = countNotNull(clipped);
+									break;
+								}
+
+								// Clipping may yield a variable number of triangles, so
+								// add these new ones to the back of the queue for subsequent
+								// clipping against next planes
+								for (int w = 0; w < nTrisToAdd; w++)
+									listTri.add(clipped[w]);
+							}
+							newTriangles = listTri.size();
+						}
 						
-						//We set the color that we calculated before
-						g.setColor(tri.color);
-						
-						//We create two polygons (one for the outline and one for the mesh)
-						Polygon t = new Polygon(xPoints,yPoints, 3);;
-						Polygon t_out = new Polygon(xPoints,yPoints, 3);
-						
-						//We draw them both and we paint the mesh one with our color and then we draw the outline
-						g.drawPolygon(t);
-						g .fillPolygon(t);
-						g.setColor(Color.BLACK);
-						g.drawPolygon(t_out);		
+						for (Triangle t : listTri) {
+//							
+							//We store the points of the triangles in a temporary array so it's easier to work with them
+							int[] xPoints = {(int)t.p.get(0).x,  (int)t.p.get(1).x,  (int)t.p.get(2).x};
+							int[] yPoints = {(int)t.p.get(0).y, (int)t.p.get(1).y, (int)t.p.get(2).y};
+							
+							//We set the color that we calculated before
+							g.setColor(tri.color);
+							
+							//We create two polygons (one for the outline and one for the mesh)
+							Polygon p = new Polygon(xPoints,yPoints, 3);;
+							Polygon p_out = new Polygon(xPoints,yPoints, 3);
+							
+							//We draw them both and we paint the mesh one with our color and then we draw the outline
+							g.drawPolygon(p);
+							g .fillPolygon(p);
+							g.setColor(Color.BLACK);
+							g.drawPolygon(p_out);	
+						}
+	
 				}
 	}
-	
+
+
 	public int countNotNull(Triangle[] array) {
 		int notNull = 0;
 		for(int i = 0; i < array.length; i++) {
@@ -476,12 +533,6 @@ public class Jraphics extends JPanel{
 		}
 		
 		return outTri;	
-	}
-	
-	private void debugClip(Triangle[] clip) {
-		for (int i =0; i <2; i++) {
-			System.out.println(clip[i]);
-		}	
 	}
 	
 	public void gameLoop() {
