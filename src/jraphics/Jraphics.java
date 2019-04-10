@@ -1,5 +1,7 @@
 package jraphics;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
 	
@@ -19,9 +21,11 @@ public class Jraphics extends JPanel{
 	private float fTheta = 0;
 	private long cTimeOld = 0;
 	private Vector3 vCamera = new Vector3(0,0,0);
-	private Vector3 vLookDir = new Vector3(0,0,1);
+	private Vector3 vLookDir;
 	public ArrayList<Triangle> vecTrianglesToRaster = new ArrayList<Triangle>();
-	
+	private float fYaw;
+	private float moveSpeed = 30;
+	private float rotateSpeed = 4;
 	//Override of the paintComponent method so it performs additional functions
 	@Override
 	public void paintComponent(Graphics g) {
@@ -234,12 +238,12 @@ public class Jraphics extends JPanel{
 				Mat4x4 matRotZ = new Mat4x4();
 				Mat4x4 matRotX = new Mat4x4();
 				
-				matRotZ = MatrixRotationZ(fTheta * 0.5);
-				matRotX = MatrixRotationX(fTheta);
+				matRotZ = MatrixRotationZ(1);
+				matRotX = MatrixRotationX(1);
 				
 				//Creation of a translation matrix so our model isn't at 0,0,0
 				Mat4x4 matTrans ;
-				matTrans = MatrixMakeTranslation(0,0,5);
+				matTrans = MatrixMakeTranslation(0,0,30);
 				
 				//Creation of a world matrix that represents all the transformations of the objects
 				Mat4x4 matWorld;
@@ -249,7 +253,10 @@ public class Jraphics extends JPanel{
 				
 				//Vectors needed for the camera
 				Vector3 vUp = new Vector3(0,1,0);
-				Vector3 vTarget = VectorAdd(vCamera, vLookDir);
+				Vector3 vTarget = new Vector3(0,0,1);
+				Mat4x4 matCameraRot = MatrixRotationY(fYaw);
+				vLookDir = MatrixMultiplyVector(matCameraRot, vTarget);
+				vTarget = VectorAdd(vCamera, vLookDir);
 				
 				Mat4x4 matCamera = MatrixPointAt(vCamera, vTarget, vUp);
 				
@@ -304,10 +311,17 @@ public class Jraphics extends JPanel{
 							triViewed.p.set(2, MatrixMultiplyVector(matView, triTransformed.p.get(2)));
 
 							
+							Triangle[] clipped = new Triangle[2];
+							clipped = TriangleClipAgainstPlane(new Vector3(0,0,1), new Vector3(0,0,1), triViewed);
+							int nClippedTriangles = countNotNull(clipped);
+							
+							for(int n = 0; n < nClippedTriangles; n++) {
+								
+							
 							//We project each triangle using the projection matrix
-							triProjected.p.set(0, MatrixMultiplyVector(matProj, triViewed.p.get(0)));
-							triProjected.p.set(1, MatrixMultiplyVector(matProj, triViewed.p.get(1)));
-							triProjected.p.set(2, MatrixMultiplyVector(matProj, triViewed.p.get(2)));
+							triProjected.p.set(0, MatrixMultiplyVector(matProj, clipped[n].p.get(0)));
+							triProjected.p.set(1, MatrixMultiplyVector(matProj, clipped[n].p.get(1)));
+							triProjected.p.set(2, MatrixMultiplyVector(matProj, clipped[n].p.get(2)));
 							
 							//Extra math
 							triProjected.p.set(0, VectorDiv(triProjected.p.get(0), triProjected.p.get(0).w));
@@ -335,7 +349,8 @@ public class Jraphics extends JPanel{
 							temp.color = getColor(Color.GREEN, 1-dp);
 							
 							//We add the triangle to the list we created before so we can sort it
-							vecTrianglesToRaster.add(temp);					
+							vecTrianglesToRaster.add(temp);	
+							}
 						}									
 				}		
 				
@@ -364,6 +379,104 @@ public class Jraphics extends JPanel{
 				}
 	}
 	
+	public int countNotNull(Triangle[] array) {
+		int notNull = 0;
+		for(int i = 0; i < array.length; i++) {
+			if(array[i] != null)
+				notNull++;
+		}			
+		return notNull;
+	}
+	
+	public void updateCameraY(int y) {
+		vCamera.y -= (moveSpeed * fElapsedTime) * y;
+	}
+	
+	public void updateCameraX(int x) {
+		vCamera.x += (moveSpeed * fElapsedTime) * x;
+
+	}
+	
+	public void setYaw(int dir) {
+		fYaw += (rotateSpeed * fElapsedTime) * dir;
+	}
+	
+	public void move(int dir) {
+		Vector3 vForward = VectorMul(vLookDir, moveSpeed * fElapsedTime * dir);
+		vCamera = VectorAdd(vCamera, vForward);
+	}
+	
+	public Vector3 VectorIntersectPlane(Vector3 plane_p, Vector3 plane_n, Vector3 lineStart, Vector3 lineEnd) {
+		plane_n = VectorNormalize(plane_n);
+		double plane_d = -VectorDotProduct(plane_n, plane_p);
+		double ad = VectorDotProduct(lineStart, plane_n);
+		double bd = VectorDotProduct(lineEnd, plane_n);
+		double t = (-plane_d - ad) / (bd - ad);
+		Vector3 lineStartToEnd = VectorSub (lineEnd, lineStart);
+		Vector3 lineToIntersect = VectorMul (lineStartToEnd, t);
+		return VectorAdd(lineStart, lineToIntersect);
+	}
+	
+	private double dist(Vector3 p, Vector3 plane_n, Vector3 plane_p) {
+		Vector3 n = VectorNormalize(p);
+		return (plane_n.x * p.x + plane_n.y * p.y + plane_n.z * p.z - VectorDotProduct(plane_n, plane_p));
+	}
+	
+	public Triangle[] TriangleClipAgainstPlane(Vector3 plane_p, Vector3 plane_n, Triangle inTri) {
+		plane_n = VectorNormalize(plane_n);
+		Triangle[] outTri = new Triangle[2];
+		outTri[0] = outTri[1] = null;
+		Vector3[] insidePoints = new Vector3[3];
+		Vector3[] outsidePoints = new Vector3[3];
+		int nInsidePointCount = 0;
+		int nOutsidePointCount = 0;
+		
+		double d0 = dist(inTri.p.get(0), plane_n, plane_p);
+		double d1 = dist(inTri.p.get(1), plane_n, plane_p);
+		double d2 = dist(inTri.p.get(2), plane_n, plane_p);
+		
+		if(d0 >= 0) { insidePoints[nInsidePointCount++] = inTri.p.get(0); }
+		else { outsidePoints[nOutsidePointCount++] = inTri.p.get(0); }
+		if(d1 >= 0) { insidePoints[nInsidePointCount++] = inTri.p.get(1); }
+		else { outsidePoints[nOutsidePointCount++] = inTri.p.get(1); }
+		if(d2 >= 0) { insidePoints[nInsidePointCount++] = inTri.p.get(2); }
+		else { outsidePoints[nOutsidePointCount++] = inTri.p.get(2); }
+		
+		if(nInsidePointCount == 0) {
+			return outTri;
+		}
+		
+		if(nInsidePointCount == 3) {
+			outTri[0] = inTri;
+			return outTri;
+		}
+		
+		if(nInsidePointCount == 1 && nOutsidePointCount == 2) {
+			Triangle tempTri = new Triangle();
+			tempTri.p.set(0, insidePoints[0]);
+			tempTri.p.set(1, VectorIntersectPlane(plane_p,plane_n, insidePoints[0], outsidePoints[0]));
+			tempTri.p.set(2, VectorIntersectPlane(plane_p, plane_n, insidePoints[0], outsidePoints[1]));
+			outTri[0] = tempTri;
+			return outTri;
+		}
+		
+		if(nInsidePointCount == 2 && nOutsidePointCount == 1) {
+			Triangle tempTri1 = new Triangle();
+			Triangle tempTri2 = new Triangle();
+			
+			tempTri1.p.set(0, insidePoints[0]);
+			tempTri1.p.set(1, insidePoints[1]);
+			tempTri1.p.set(2, VectorIntersectPlane(plane_p, plane_n, insidePoints[0], outsidePoints[0]));
+			
+			tempTri2.p.set(0, insidePoints[1]);
+			tempTri2.p.set(1, tempTri1.p.get(2));
+			tempTri2.p.set(2, VectorIntersectPlane(plane_p, plane_n, insidePoints[1], outsidePoints[0]));
+			return outTri;
+		}
+		
+		return outTri;	
+	}
+	
 	public void gameLoop() {
 		
 		while(isRunning) {
@@ -382,4 +495,5 @@ public class Jraphics extends JPanel{
 			}
 		}
 	}
+
 }

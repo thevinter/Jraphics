@@ -1,5 +1,8 @@
 package jraphics;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 /*
  * A class that represents a Vector in a three-dimensional space and its magnitude (usually 1 -> point)
  */
@@ -11,6 +14,11 @@ public class Vector3 {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		this.w = 1;
+	}
+	
+	public Vector3() {
+		this.x = this.y = this.z = 0;
 		this.w = 1;
 	}
 }

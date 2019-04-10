@@ -16,13 +16,16 @@
 			frame.setSize(500,500);
 			
 			//Adding a Panel to the Frame
+		
 			Jraphics jraphics = new Jraphics();
+			Listener l = new Listener(jraphics);
 			frame.add(jraphics);
 			frame.setVisible(true);
+			frame.addKeyListener(l);
 			
 			//Creation of a Mesh from an .obj file and its projection using a projection matrix
 			jraphics.meshCube = new Mesh();
-			jraphics.meshCube.loadFromObject("D:\\Blender\\teapot.obj");
+			jraphics.meshCube.loadFromObject("D:\\Blender\\queen.obj");
 			jraphics.matProj = jraphics.MatrixMakeProjection(90.0, (double)jraphics.getSize().width / (double)jraphics.getSize().height, 0.1, 1000.0);
 			jraphics.frame = frame;
 			//Main loop that keeps painting the screen and calculating the "rotation angle"

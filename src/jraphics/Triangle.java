@@ -17,4 +17,10 @@ public class Triangle {
 		p.add(b);
 		p.add(c);
 	}
+	
+	public Triangle() {
+		p = new ArrayList<>();
+		p.add(new Vector3());
+		p.add(new Vector3());
+		p.add(new Vector3());	}
 }
