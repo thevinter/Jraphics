@@ -67,7 +67,7 @@ import javax.swing.*;
 			//Creation of a Mesh from an .obj file and its projection using a projection matrix
 			jraphics.meshCube = new Mesh();
 			jraphics.meshCube.loadFromObject("D:\\Blender\\queen.obj");
-			jraphics.matProj = jraphics.MatrixMakeProjection(90.0, (double)jraphics.getSize().width / (double)jraphics.getSize().height, 0.1, 1000.0);
+			jraphics.matProj = AlgebraUtility.MatrixMakeProjection(90.0, (double)jraphics.getSize().width / (double)jraphics.getSize().height, 0.1, 1000.0);
 			jraphics.frame = frame;
 			//Main loop that keeps painting the screen and calculating the "rotation angle"
 
