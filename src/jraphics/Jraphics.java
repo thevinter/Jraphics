@@ -19,7 +19,9 @@ import javax.swing.*;
  *
  */
 public class Jraphics extends JPanel{
+	Thread t;
 
+	
 	private static final long serialVersionUID = 1L;
 	private static boolean isRunning = true;
 	
@@ -45,6 +47,7 @@ public class Jraphics extends JPanel{
 		g.setColor(Color.BLACK);
 		doGameUpdates(g);	
 	}
+	
 	
 	public void gameLoop() {
 

@@ -1,8 +1,6 @@
 package jraphics;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Comparator;
 
 /*
  * A class that represents a Triangle (a face). It is made of 3 vectors that connect the vertexes.
