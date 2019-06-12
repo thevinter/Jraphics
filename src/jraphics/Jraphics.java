@@ -22,7 +22,7 @@ public class Jraphics extends JPanel{
 
 	
 	private static final long serialVersionUID = 1L;
-	private static final int viewOffset = 5;
+	private static final int viewOffset = 10;
 	private static final Color polyColor = Color.ORANGE;
 	
 	private static boolean isRunning = true;
@@ -37,8 +37,8 @@ public class Jraphics extends JPanel{
 	private Vector3 vCamera = new Vector3(0,0,0);
 	private Vector3 vLookDir;
 	private float fYaw;
-	private float moveSpeed = 30;
-	private float rotateSpeed = 4;
+	private float moveSpeed = 60;
+	private float rotateSpeed = 30;
 	//private float fTheta = 0;
 
 	/**
@@ -113,9 +113,9 @@ public class Jraphics extends JPanel{
 		for(Triangle tri : meshCube.tris) {
 
 			//Creation of some empty triangles needed for our transformation
-			Triangle triProjected = new Triangle(new Vector3(0,0,0), new Vector3(0,0,0), new Vector3(0,0,0));
-			Triangle triTransformed = new Triangle(new Vector3(0,0,0), new Vector3(0,0,0), new Vector3(0,0,0));
-			Triangle triViewed = new Triangle(new Vector3(0,0,0), new Vector3(0,0,0), new Vector3(0,0,0));
+			Triangle triProjected = new Triangle();
+			Triangle triTransformed = new Triangle();
+			Triangle triViewed = new Triangle();
 
 			//Translating all the vertexes of the tri using the world matrix
 			triTransformed.p[0] = AlgebraUtility.MatrixMultiplyVector(matWorld, tri.p[0]);
@@ -123,7 +123,7 @@ public class Jraphics extends JPanel{
 			triTransformed.p[2] = AlgebraUtility.MatrixMultiplyVector(matWorld, tri.p[2]);
 
 			//Creation of a normal and two lines
-			Vector3 normal = new Vector3(0,0,0); Vector3 line1 = new Vector3 (0,0,0); Vector3 line2 = new Vector3(0,0,0);
+			Vector3 normal = new Vector3(); Vector3 line1 = new Vector3 (); Vector3 line2 = new Vector3();
 
 			//Auxialiary lines needed to calculate the normal of each triangle
 			line1 = AlgebraUtility.VectorSub(triTransformed.p[1], triTransformed.p[0]);
@@ -226,7 +226,7 @@ public class Jraphics extends JPanel{
 					switch (p)
 					{
 					case 0:	
-						clipped = TriangleClipAgainstPlane(new Vector3(0,0,0), new Vector3(0,1,0), test);
+						clipped = TriangleClipAgainstPlane(new Vector3(), new Vector3(0,1,0), test);
 						nTrisToAdd = AlgebraUtility.countNotNull(clipped);
 						break;
 					case 1:	
@@ -234,7 +234,7 @@ public class Jraphics extends JPanel{
 						nTrisToAdd = AlgebraUtility.countNotNull(clipped);
 						break;
 					case 2:	
-						clipped = TriangleClipAgainstPlane(new Vector3(0,0,0), new Vector3(1,0,0), test);
+						clipped = TriangleClipAgainstPlane(new Vector3(), new Vector3(1,0,0), test);
 						nTrisToAdd = AlgebraUtility.countNotNull(clipped);
 						break;
 					case 3:	
