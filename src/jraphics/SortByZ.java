@@ -2,10 +2,11 @@ package jraphics;
 
 import java.util.Comparator;
 
-/*
+/**
  * An auxiliary class that implements a Comparator so we can apply Lambda functions to sort a list of triangles based on their median Z
+ *
+ * @author Nikita Brancatisano, Nicola Bettinzoli, Alex Cominelli 
  */
-
 class SortByZ implements Comparator<Triangle> 
 { 
 	

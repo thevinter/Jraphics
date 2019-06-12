@@ -15,14 +15,16 @@ import javax.swing.*;
  * 
  * This code is protected by GNU GPLv3, this means you must attribute me if you use it.
  * 
- * @author Nikita Brancatisano
- *
+ * @author Nikita Brancatisano, Nicola Bettinzoli, Alex Cominelli
  */
 public class Jraphics extends JPanel{
 	Thread t;
 
 	
 	private static final long serialVersionUID = 1L;
+	private static final int viewOffset = 5;
+	private static final Color polyColor = Color.ORANGE;
+	
 	private static boolean isRunning = true;
 	
 	public ArrayList<Triangle> vecTrianglesToRaster = new ArrayList<Triangle>();
@@ -78,12 +80,12 @@ public class Jraphics extends JPanel{
 		Mat4x4 matRotZ = new Mat4x4();
 		Mat4x4 matRotX = new Mat4x4();
 
-		matRotZ = AlgebraUtility.MatrixRotationZ(1);
-		matRotX = AlgebraUtility.MatrixRotationX(1);
+		matRotZ = AlgebraUtility.MatrixRotationZ(Math.PI);
+		matRotX = AlgebraUtility.MatrixRotationX(0);
 
 		//Creation of a translation matrix so our model isn't at 0,0,0
 		Mat4x4 matTrans ;
-		matTrans = AlgebraUtility.MatrixMakeTranslation(0,0,10);
+		matTrans = AlgebraUtility.MatrixMakeTranslation(0,2,viewOffset);
 
 		//Creation of a world matrix that represents all the transformations of the objects
 		Mat4x4 matWorld;
@@ -188,7 +190,7 @@ public class Jraphics extends JPanel{
 					Triangle temp = new Triangle(triProjected.p[0], triProjected.p[1], triProjected.p[2]);
 
 					//We get the color based on the main color and the dot product of the normal and the light we calculated before
-					temp.color = getColor(Color.GREEN, 1-dp);
+					temp.color = getColor(polyColor, 1-dp);
 
 					//We add the triangle to the list we created before so we can sort it
 					vecTrianglesToRaster.add(temp);	
@@ -262,13 +264,13 @@ public class Jraphics extends JPanel{
 
 				//We create two polygons (one for the outline and one for the mesh)
 				Polygon p = new Polygon(xPoints,yPoints, 3);;
-				Polygon p_out = new Polygon(xPoints,yPoints, 3);
+				//xPolygon p_out = new Polygon(xPoints,yPoints, 3);
 
 				//We draw them both and we paint the mesh one with our color and then we draw the outline
 				g.drawPolygon(p);
 				g .fillPolygon(p);
-				g.setColor(Color.BLACK);
-				g.drawPolygon(p_out);	
+				g.setColor(polyColor);
+				//g.drawPolygon(p_out);	
 			}
 
 		}

@@ -1,9 +1,13 @@
 package jraphics;
 
 /**
+ * A collection of useful methods to work with matrixes and vectors.
  * 
- * @author Nikita Brancatisano
- *
+ * Keep in mind that most of the methods work only with three dimensional vectors and 4x4 matrixes.
+ * 
+ * The class is static and should not be initialized
+ * 
+ * @author Nikita Brancatisano, Nicola Bettinzoli, Alex Cominelli
  */
 public class AlgebraUtility {
 	

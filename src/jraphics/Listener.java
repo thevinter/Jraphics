@@ -3,8 +3,12 @@ package jraphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+/**
+ * A simple KeyListener that registers WASD movement as well as the key based one.
+ * 
+ * @author Nikita Brancatisano, Nicola Bettinzoli, Alex Cominelli
+ */
 public class Listener implements KeyListener {
-
 	
 	public Jraphics j;
 	
