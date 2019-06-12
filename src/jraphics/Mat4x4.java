@@ -1,7 +1,9 @@
 package jraphics;
 
-/*
+/**
  * A class that represents a 4x4 matrix
+ * 
+ * @author Nikita Brancatisano, Nicola Bettinzoli, Alex Cominelli
  */
 
 public class Mat4x4 {
