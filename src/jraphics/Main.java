@@ -19,15 +19,11 @@ import javax.swing.filechooser.FileSystemView;
 	 */
 	public class Main {
 		
-		
-		
-		
 		public static void main(String[] args) {
 			
 			GUI gui = new GUI();
 			gui.createGUI();
 			gui.setVisible(true);
-			
 			while(gui.isGo() == false) {
 				gui.setVisible(true);
 			}
