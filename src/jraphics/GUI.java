@@ -45,8 +45,8 @@ public class GUI extends JFrame {
 	private boolean go = false;
 	
 
-	static void show3D(File file) {
-		
+	 static void show3D(File file) {
+
 		//Creation of a Frame
 		JFrame.setDefaultLookAndFeelDecorated(true);
 		JFrame frame =  new JFrame("Graphics");
@@ -121,6 +121,7 @@ public class GUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
             	
+//            	show3D(file);
             	go = true;
             }
         });

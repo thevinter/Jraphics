@@ -25,9 +25,6 @@ import javax.swing.filechooser.FileSystemView;
 			gui.createGUI();
 			gui.setVisible(true);
 			
-			while(gui.isGo() == false) {
-				gui.setVisible(true);
-			}
-				GUI.show3D(gui.getFile());
+			GUI.show3D(gui.getFile());
 		}
 	}
