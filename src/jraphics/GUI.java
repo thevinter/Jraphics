@@ -43,6 +43,7 @@ public class GUI extends JFrame {
 	private JPanel panel3 = new JPanel(new GridLayout(1, 2, 10, 10));
 	private File file;
 	private boolean go = false;
+	
 
 	static void show3D(File file) {
 		
