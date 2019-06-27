@@ -46,14 +46,14 @@ public class GUI extends JFrame {
 	
 
 	 static void show3D(File file) {
-
+		 
 		//Creation of a Frame
 		JFrame.setDefaultLookAndFeelDecorated(true);
 		JFrame frame =  new JFrame("Graphics");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setBackground(Color.white);
 		frame.setSize(500,500);
-		
+	
 		//Adding a Panel to the Frame
 		Jraphics jraphics = new Jraphics();
 		Listener l = new Listener(jraphics);
