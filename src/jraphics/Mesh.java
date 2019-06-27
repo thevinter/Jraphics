@@ -5,10 +5,8 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-/**
+/*
  * A class to represent a mesh (a collection of triangles that creates a fully 3D object)
- * 
- * @author Nikita Brancatisano, Nicola Bettinzoli, Alex Cominelli 
  */
 
 public class Mesh {
@@ -16,12 +14,7 @@ public class Mesh {
 	//The list of all of the triangles
 	ArrayList<Triangle> tris = new ArrayList<>();
 	
-	/**
-	 * A method that parses an .obj file and creates a mesh from it
-	 * 
-	 * @param The path of the file to parse
-	 * @return true if the parsing was successeful
-	 */
+	//A method to parse a mesh straight from an .obj file
 	public boolean loadFromObject(String path) {
 		
 		ArrayList<Vector3> verts = new ArrayList<>();

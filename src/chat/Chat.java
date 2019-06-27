@@ -61,7 +61,7 @@ public class Chat extends JFrame implements ActionListener {
 			}
 			catch(IOException ie) {
 				Toolkit.getDefaultToolkit().beep();
-				JOptionPane.showMessageDialog(null, "Data overflow, connection error!");
+				JOptionPane.showMessageDialog(null, "Data overflow, connection error !");
 			}
 			so.close();
 			dispose();
@@ -78,7 +78,7 @@ public class Chat extends JFrame implements ActionListener {
 		if(in == null || in.isEmpty()) {
 			System.exit(0);
 		}
-		new Chat(in,"224.0.0.8",9876);
+		new Chat(in,"224.0.0.7",9876);
 		
 	}
 
