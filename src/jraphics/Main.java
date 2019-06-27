@@ -30,7 +30,7 @@ import javax.swing.filechooser.FileSystemView;
 			JFrame frame =  new JFrame("Graphics");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.setBackground(Color.white);
-			frame.setSize(500,500);
+			frame.setSize(1000,1000);
 			
 			//Adding a Panel to the Frame
 			Jraphics jraphics = new Jraphics();
