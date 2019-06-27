@@ -1,18 +1,8 @@
 	package jraphics;
-	
-	import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.Scanner;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
+import java.awt.Color;
+import java.io.File;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.filechooser.FileSystemView;
 	
 	/**
 	 * The main class of the program. It creates the swing frames, loads the object from a file and initializes all the required methods
