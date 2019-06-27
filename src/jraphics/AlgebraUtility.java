@@ -95,7 +95,7 @@ public class AlgebraUtility {
 	}
 
 	/**
-	 * Cross product between to vectors
+	 * Cross product between two vectors
 	 * @param v1 The first vector
 	 * @param v2 The second vector
 	 * @return A new vector which is the cross product between the two vectors
