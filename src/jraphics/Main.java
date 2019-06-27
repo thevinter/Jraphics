@@ -1,11 +1,17 @@
 	package jraphics;
 	
-	import java.awt.Color;
+	import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Scanner;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileSystemView;
 	
 	/**
@@ -19,26 +25,26 @@ import javax.swing.filechooser.FileSystemView;
 		//public static final String FILE_LOCATION = "D:\\Blender\\teapot.obj";
 		public static File selectedFile;
 		public static boolean selected = false;
+		
 		public static void main(String[] args) {
-			GUI frm = new GUI("Button Demo");
-
-			 frm.setSize( 150, 75 );     
-			 frm.setVisible( true );  
+			
+			GUI frm = new GUI("Jraphics");
+			frm.setVisible( true );  
 			
 			while(!selected) {
 				System.out.println("debug"); //non togliere questa linea altrimenti non funziona
 				if (selected) {
-					frm.setVisible(false);
+//					frm.setVisible(false);
 					break;
 				}
 			}
 			  
-			JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-			int returnValue = jfc.showOpenDialog(null);
-			
-			if(returnValue == JFileChooser.APPROVE_OPTION) {
-				selectedFile = jfc.getSelectedFile();
-			}
+//			JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+//			int returnValue = jfc.showOpenDialog(null);
+//			
+//			if(returnValue == JFileChooser.APPROVE_OPTION) {
+//				selectedFile = jfc.getSelectedFile();
+//			}
 			//Creation of a Frame
 			JFrame.setDefaultLookAndFeelDecorated(true);
 			JFrame frame =  new JFrame("Graphics");
@@ -55,7 +61,7 @@ import javax.swing.filechooser.FileSystemView;
 			
 			//Creation of a Mesh from an .obj file and its projection using a projection matrix
 			jraphics.meshCube = new Mesh();
-			jraphics.meshCube.loadFromObject(selectedFile.getAbsolutePath());
+			jraphics.meshCube.loadFromObject(frm.getFile().getAbsolutePath());
 			jraphics.matProj = AlgebraUtility.MatrixMakeProjection(90.0, (double)jraphics.getSize().width / (double)jraphics.getSize().height, 0.1, 1000.0);
 			jraphics.frame = frame;
 			//Main loop that keeps painting the screen and calculating the "rotation angle"
