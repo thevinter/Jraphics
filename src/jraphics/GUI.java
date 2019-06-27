@@ -121,8 +121,8 @@ public class GUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
             	
-//            	show3D(file);
-            	go = true;
+            	show3D(file);
+//            	go = true;
             }
         });
         howToUseBtn.addActionListener(new ActionListener() {
