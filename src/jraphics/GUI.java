@@ -53,14 +53,14 @@ public class GUI extends JFrame {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setBackground(Color.white);
 		frame.setSize(500,500);
-	
+
 		//Adding a Panel to the Frame
 		Jraphics jraphics = new Jraphics();
 		Listener l = new Listener(jraphics);
 		frame.add(jraphics);
 		frame.setVisible(true);
 		frame.addKeyListener(l);
-		
+	
 		//Creation of a Mesh from an .obj file and its projection using a projection matrix
 		jraphics.meshCube = new Mesh();
 		jraphics.meshCube.loadFromObject(file.getAbsolutePath());

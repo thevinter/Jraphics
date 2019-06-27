@@ -18,7 +18,7 @@ import javax.swing.filechooser.FileSystemView;
 	 * @author Nikita Brancatisano, Nicola Bettinzoli, Alex Cominelli
 	 */
 	public class Main {
-	
+
 		public static void main(String[] args) {
 			
 			GUI gui = new GUI();
