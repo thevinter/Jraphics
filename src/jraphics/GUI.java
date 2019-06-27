@@ -21,6 +21,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.filechooser.FileSystemView;
 
+
 public class GUI extends JFrame {
 
 	private JButton openFileBtn = new JButton("Open File");

@@ -27,6 +27,7 @@ import javax.swing.filechooser.FileSystemView;
 			GUI gui = new GUI();
 			gui.createGUI();
 			gui.setVisible(true);
+			
 			while(gui.isGo() == false) {
 				gui.setVisible(true);
 			}
