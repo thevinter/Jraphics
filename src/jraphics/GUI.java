@@ -3,7 +3,11 @@ package jraphics;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 
@@ -63,6 +67,15 @@ class GUI extends JFrame {
 
         mainPanel.add(panel2, BorderLayout.NORTH);
         mainPanel.add(panel1, BorderLayout.CENTER);
+        BufferedImage myPicture = null;
+		try {
+			myPicture = ImageIO.read(new File("logo.png"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        JLabel picLabel = new JLabel(new ImageIcon(myPicture.getScaledInstance(this.getSize().width-160, this.getSize().height-160, Image.SCALE_FAST)));
+        panel1.add(picLabel);
         mainPanel.add(panel3, BorderLayout.SOUTH);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(mainPanel);
