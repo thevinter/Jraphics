@@ -22,6 +22,7 @@ public class Jraphics extends JPanel{
 
 	
 	private static final long serialVersionUID = 1L;
+	private static final long boy;
 	private static final int viewOffset = 10;
 	private static final Color polyColor = Color.ORANGE;
 	
